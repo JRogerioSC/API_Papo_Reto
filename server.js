@@ -20,6 +20,19 @@ app.post('/usuarios', async (req,res) => {
 
 })
 
+
+app.delete('/usuarios/:id', async (req,res) => {
+
+    await prisma.user.delete({
+       where:{
+        id: req.params.id
+       }
+    })
+
+    res.status(200).json({menssage: "Usuario Deletado !"})
+})
+
+
 app.get('/usuarios',async (req,res) => {
 
     const users = await prisma.user.findMany()
