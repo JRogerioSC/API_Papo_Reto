@@ -6,7 +6,9 @@ const prisma = new PrismaClient()
 
 const app = express()
 app.use(express.json())
-app.use(cors('https://api-papo-reto.onrender.com'))
+app.use(cors({
+  origin: 'https://api-papo-reto.onrender.com'
+}))
 
 
 app.post('/usuarios', async (req,res) => { 
