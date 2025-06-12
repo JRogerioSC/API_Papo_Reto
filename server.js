@@ -1,47 +1,64 @@
 import express from 'express'
 import cors from 'cors'
-import  {PrismaClient}  from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
+import { WebSocketServer } from 'ws'
+import http from 'http'
 
 const prisma = new PrismaClient()
-
 const app = express()
+const server = http.createServer(app)
+const wss = new WebSocketServer({ server })
+
+let sockets = []
+
+wss.on('connection', (ws) => {
+  sockets.push(ws)
+
+  ws.on('close', () => {
+    sockets = sockets.filter((s) => s !== ws)
+  })
+})
+
+function broadcastUsers() {
+  prisma.user.findMany().then((users) => {
+    const data = JSON.stringify({ type: 'UPDATE_USERS', payload: users })
+    sockets.forEach((socket) => {
+      if (socket.readyState === 1) {
+        socket.send(data)
+      }
+    })
+  })
+}
+
 app.use(express.json())
-app.use(cors({
-  origin: 'https://api-papo-reto.onrender.com'
-}))
+app.use(cors({ origin: 'https://api-papo-reto.onrender.com' }))
 
+app.post('/usuarios', async (req, res) => {
+  await prisma.user.create({
+    data: {
+      name: req.body.name,
+      menssage: req.body.menssage,
+    },
+  })
 
-app.post('/usuarios', async (req,res) => { 
-    
-    await prisma.user.create({
-        data:{
-         name: req.body.name,
-         menssage: req.body.menssage
-        }
-    })
-
-    res.status(201).json(req.body)
-
+  broadcastUsers()
+  res.status(201).json(req.body)
 })
 
+app.delete('/usuarios/:id', async (req, res) => {
+  await prisma.user.delete({
+    where: { id: req.params.id },
+  })
 
-app.delete('/usuarios/:id', async (req,res) => {
-
-    await prisma.user.delete({
-       where:{
-        id: req.params.id
-       }
-    })
-
-    res.status(200).json({menssage: "Usuario Deletado !"})
+  broadcastUsers()
+  res.status(200).json({ menssage: 'Usuario Deletado !' })
 })
 
-
-app.get('/usuarios',async (req,res) => {
-
-    const users = await prisma.user.findMany()
-
-    res.status(200).json(users)
+app.get('/usuarios', async (req, res) => {
+  const users = await prisma.user.findMany()
+  res.status(200).json(users)
 })
 
-app.listen(3001)
+server.listen(3001, () => {
+  console.log('Servidor rodando na porta 3001')
+})
