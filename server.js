@@ -36,7 +36,7 @@ setInterval(() => {
       ws.send(JSON.stringify({ type: 'PING' }))
     }
   })
-}, 25000) // a cada 25 segundos
+}, 2000) // a cada 2 segundos
 
 app.use(express.json())
 app.use(cors({ origin: 'https://matriproject.netlify.app/' }))
