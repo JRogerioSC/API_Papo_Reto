@@ -28,15 +28,17 @@ function broadcastUsers() {
       }
     })
   })
-}
 
-setInterval(() => {
+  setInterval(() => {
   sockets.forEach((ws) => {
     if (ws.readyState === 1) {
       ws.send(JSON.stringify({ type: 'PING' }))
     }
   })
 }, 25000) // a cada 25 segundos
+}
+
+
 
 app.use(express.json())
 app.use(cors({ origin: 'https://pap0reto.netlify.app/' }))
