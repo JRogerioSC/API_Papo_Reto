@@ -6,9 +6,7 @@ const prisma = new PrismaClient()
 
 const app = express()
 app.use(express.json())
-app.use(cors({
-  origin: 'https://matriproject.netlify.app/'
-}))
+app.use(cors({ 'https://pap0reto.netlify.app/'}))
 
 
 app.post('/usuarios', async (req,res) => { 
